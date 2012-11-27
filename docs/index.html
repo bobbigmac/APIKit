@@ -1,0 +1,488 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>apiKit API Documentation</title>
+<script type="text/javascript" src="json2min.js"></script>
+<script type="text/javascript" src="jXHR.js"></script>
+<script type="text/javascript" src="pnapi.js"></script>
+<style type="text/css">
+a {
+	color: #000011;
+	text-decoration: underline;
+}
+a:hover {
+	color: #666666;
+	text-decoration: underline;
+}
+th {
+	border-bottom: solid 4px black;
+}
+td {
+	border-bottom: solid 1px black;
+	border-left: solid 1px black;
+}
+thead td {
+	font-weight: bold;
+}
+table table td {
+	border-bottom: solid 0px black;
+	border-left: solid 0px black;
+}
+.topFuncRow {
+	width: 100%;
+}
+
+.subFuncTable {
+	width: 100%;
+}
+.subFuncNameCell {
+	width: 15%;
+}
+.subFuncArgsCell {
+	width: 20%;
+}
+.subFuncGrantCell {
+	width: 5%;
+}
+.subFuncDescCell {
+	width: 35%;
+}
+.subFuncTrigCell {
+	width: 15%;
+}
+.subFuncTrigNameCell {
+	padding-left: 10px;
+}
+.subFuncTrigArgsCell {
+	padding-left: 20px;
+}
+.subFuncArgsTable {
+	width: 100%;
+}
+.subFuncArgNameCell {
+	width: 50%;
+}
+.subFuncArgValidatorCell {
+	width: 50%;
+}
+</style>
+<script type="text/javascript">
+
+var apiUrl = 'http://apikit.org/api/';
+
+if(apiUrl && apiUrl.indexOf('apikit.org') > -1 && window.location && window.location.href.indexOf('apikit.org') == -1)
+{
+	//Probably a new setup.
+	apiUrl = window.location.href.replace(/docs[\S]+$/i, 'service.php');
+	alert('Please change the apiUrl in your docs page source to the correct url.\n\nIt may not yet be reading your own api instance. \n\nTrying: ' + apiUrl);
+}
+
+function setClassName(element, className) //ie sucks
+{
+	if(element && className)
+	{
+		element.setAttribute('class', className);
+		element.className = className;
+	}
+}
+
+function getDocs()
+{
+	if(apiUrl && com && com.apikit && com.apikit.serviceApi)
+	{
+		com.apikit.serviceApi.init(apiUrl);
+		
+		var getSpecLink = document.getElementById('getSpecLink');
+		if(getSpecLink)
+		{
+			var newUrl = getSpecLink.getAttribute('href').replace('#apiurl#', apiUrl);
+			getSpecLink.removeAttribute('href');
+			getSpecLink.setAttribute('href', newUrl);
+			getSpecLink.innerHTML = getSpecLink.innerHTML.replace('#apiurl#', apiUrl);
+		}
+		
+		var callbackFunc = function(specObj)
+		{
+			try
+			{
+				if(specObj)
+				{
+					//FUNCTIONS
+					var functionTableBody = document.getElementById('funcDocsBody');
+					if(specObj.functions && functionTableBody)
+					{
+						for(funcName in specObj.functions)
+						{
+							if(typeof(specObj.functions[funcName]) == "object")
+							{
+								var topFuncRow = document.createElement('tr');
+								setClassName(topFuncRow, 'topFuncRow');
+								var topFuncNameCell = document.createElement('td');
+								setClassName(topFuncNameCell, 'topFuncNameCell');
+								var topFuncDetailCell = document.createElement('td');
+								setClassName(topFuncDetailCell, 'topFuncDetailCell');
+								
+								topFuncNameCell.innerHTML = funcName;
+								
+								topFuncRow.appendChild(topFuncNameCell);
+								topFuncRow.appendChild(topFuncDetailCell);
+								
+								subFuncTable = document.createElement('table');
+								setClassName(subFuncTable, 'subFuncTable');
+								subFuncTableBody = document.createElement('tbody');
+								subFuncTable.appendChild(subFuncTableBody);
+								topFuncDetailCell.appendChild(subFuncTable);
+								
+								for(subFuncName in specObj.functions[funcName])
+								{
+									if(typeof(specObj.functions[funcName][subFuncName]) == "object")
+									{
+										var subFuncRow = document.createElement('tr');
+										setClassName(subFuncRow, 'subFuncRow');
+										var subFuncNameCell = document.createElement('td');
+										setClassName(subFuncNameCell, 'subFuncNameCell');
+										var subFuncArgsCell = document.createElement('td');
+										setClassName(subFuncArgsCell, 'subFuncArgsCell');
+										var subFuncGrantCell = document.createElement('td');
+										setClassName(subFuncGrantCell, 'subFuncGrantCell');
+										var subFuncDescCell = document.createElement('td');
+										setClassName(subFuncDescCell, 'subFuncDescCell');
+										var subFuncTrigCell = document.createElement('td');
+										setClassName(subFuncTrigCell, 'subFuncTrigCell');
+										
+										subFuncNameCell.innerHTML = subFuncName;
+										if(specObj.functions[funcName][subFuncName].args)
+										{
+											var subFuncArgsTable = document.createElement('table');
+											var subFuncArgsTableBody = document.createElement('tbody');
+											subFuncArgsTable.appendChild(subFuncArgsTableBody);
+											setClassName(subFuncArgsTable, 'subFuncArgsTable');
+											for(subFuncArgName in specObj.functions[funcName][subFuncName].args)
+											{
+												if(subFuncArgName.indexOf('internal:') == -1)
+												{
+													var subFuncArgRow = document.createElement('tr');
+													setClassName(subFuncArgRow, 'subFuncArgRow');
+													var subFuncArgNameCell = document.createElement('td');
+													setClassName(subFuncArgNameCell, 'subFuncArgNameCell');
+													var subFuncArgValidatorCell = document.createElement('td');
+													setClassName(subFuncArgValidatorCell, 'subFuncArgValidatorCell');
+													
+													subFuncArgNameCell.innerHTML = subFuncArgName;
+													subFuncArgValidatorCell.innerHTML = ((specObj.functions[funcName][subFuncName].args[subFuncArgName] !== null) ? specObj.functions[funcName][subFuncName].args[subFuncArgName] : 'null');
+													
+													subFuncArgRow.appendChild(subFuncArgNameCell);
+													subFuncArgRow.appendChild(subFuncArgValidatorCell);
+													subFuncArgsTableBody.appendChild(subFuncArgRow);
+												}
+											}
+											if(subFuncArgsTableBody.childNodes.length > 0)
+											{
+												subFuncArgsCell.appendChild(subFuncArgsTable);
+											}
+											else
+											{
+												subFuncArgsCell.innerHTML = 'none';
+											}
+										}
+										else
+										{
+											subFuncArgsCell.innerHTML = 'none';
+										}
+										
+										//Triggers
+										if(specObj.functions[funcName][subFuncName].triggers)
+										{
+											var subFuncTrigTable = document.createElement('table');
+											var subFuncTrigTableBody = document.createElement('tbody');
+											subFuncTrigTable.appendChild(subFuncTrigTableBody);
+											setClassName(subFuncTrigTable, 'subFuncTrigTable');
+											
+											for(subFuncTrigName in specObj.functions[funcName][subFuncName].triggers)
+											{
+												var trigFuncName = specObj.functions[funcName][subFuncName].triggers[subFuncTrigName]['function'];
+												var trigFuncWait = specObj.functions[funcName][subFuncName].triggers[subFuncTrigName]['wait'];
+												var trigFuncArgs = specObj.functions[funcName][subFuncName].triggers[subFuncTrigName]['args'];
+												
+												var subFuncTrigHostRow = document.createElement('tr');
+												setClassName(subFuncTrigHostRow, 'subFuncTrigHostRow');
+												var subFuncTrigHostNameCell = document.createElement('td');
+												setClassName(subFuncTrigHostNameCell, 'subFuncTrigHostNameCell');
+												subFuncTrigHostNameCell.innerHTML = subFuncTrigName;
+												
+												var subFuncTrigRow = document.createElement('tr');
+												setClassName(subFuncTrigRow, 'subFuncTrigRow');
+												var subFuncTrigNameCell = document.createElement('td');
+												setClassName(subFuncTrigNameCell, 'subFuncTrigNameCell');
+												subFuncTrigNameCell.innerHTML = trigFuncName + ((trigFuncWait) ? ' (waits)':'');
+												
+												subFuncTrigHostRow.appendChild(subFuncTrigHostNameCell);
+												subFuncTrigRow.appendChild(subFuncTrigNameCell);
+												subFuncTrigTableBody.appendChild(subFuncTrigHostRow);
+												subFuncTrigTableBody.appendChild(subFuncTrigRow);
+												
+												//args list
+												if(trigFuncArgs && trigFuncArgs.length > 0)
+												{
+													var subFuncTrigArgsRow = document.createElement('tr');
+													setClassName(subFuncTrigArgsRow, 'subFuncTrigArgsRow');
+													var subFuncTrigArgsCell = document.createElement('td');
+													setClassName(subFuncTrigArgsCell, 'subFuncTrigArgsCell');
+													subFuncTrigArgsCell.innerHTML = trigFuncArgs.join(', ');
+													
+													subFuncTrigArgsRow.appendChild(subFuncTrigArgsCell);
+													subFuncTrigTableBody.appendChild(subFuncTrigArgsRow);
+												}
+											}
+											
+											if(subFuncTrigTableBody.childNodes.length > 0)
+											{
+												subFuncTrigCell.appendChild(subFuncTrigTable);
+											}
+										}
+										else
+										{
+											subFuncTrigCell.innerHTML = 'none';
+										}
+										
+										subFuncGrantCell.innerHTML = ((specObj.functions[funcName][subFuncName].grant) ? specObj.functions[funcName][subFuncName].grant.join(', ') : 'none');
+										subFuncDescCell.innerHTML = ((specObj.functions[funcName][subFuncName].description) ? specObj.functions[funcName][subFuncName].description : 'none');
+										subFuncRow.appendChild(subFuncNameCell);
+										subFuncRow.appendChild(subFuncGrantCell);
+										subFuncRow.appendChild(subFuncArgsCell);
+										subFuncRow.appendChild(subFuncTrigCell);
+										subFuncRow.appendChild(subFuncDescCell);
+										
+										subFuncTableBody.appendChild(subFuncRow);
+									}
+								}
+								
+								functionTableBody.appendChild(topFuncRow);
+							}
+						}
+					}
+					
+					//VALIDATORS
+					var validatorsTableBody = document.getElementById('apiValidatorsBody');
+					if(specObj.validators && validatorsTableBody)
+					{
+						for(var validatorName in specObj.validators)
+						{
+							if(specObj.validators[validatorName])
+							{
+								var validatorRow = document.createElement('tr');
+								var validatorNameCell = document.createElement('td');
+								var validatorRegexCell = document.createElement('td');
+								
+								validatorRow.appendChild(validatorNameCell);
+								validatorRow.appendChild(validatorRegexCell);
+								
+								validatorNameCell.innerHTML = validatorName;
+								validatorRegexCell.innerHTML = specObj.validators[validatorName];
+								
+								validatorsTableBody.appendChild(validatorRow);
+							}
+						}
+					}
+					
+					//TRIGGERS
+					var triggersTableBody = document.getElementById('apiTriggersBody');
+					if(specObj.triggers && triggersTableBody)
+					{
+						for(var triggerName in specObj.triggers)
+						{
+							if(specObj.triggers[triggerName])
+							{
+								var triggerUrl = specObj.triggers[triggerName]['url'];
+								var triggerDefaults = specObj.triggers[triggerName]['defaults'];
+							
+								var triggerRow = document.createElement('tr');
+								var triggerNameCell = document.createElement('td');
+								var triggerUrlCell = document.createElement('td');
+								var triggerDefaultsCell = document.createElement('td');
+								
+								triggerNameCell.innerHTML = triggerName;
+								
+								var triggerUrlLink = document.createElement('a');
+								triggerUrlLink.setAttribute('href', triggerUrl);
+								triggerUrlLink.innerHTML = triggerUrlLink;
+								triggerUrlCell.appendChild(triggerUrlLink);
+								
+								//Trigger defaults
+								var triggerDefTable = document.createElement('table');
+								var triggerDefTableBody = document.createElement('tbody');
+								triggerDefTable.appendChild(triggerDefTableBody);
+								setClassName(triggerDefTable, 'triggerDefTable');
+								for(triggerDefName in triggerDefaults)
+								{
+									if(triggerDefName.indexOf('internal:') == -1)
+									{
+										var triggerDefRow = document.createElement('tr');
+										setClassName(triggerDefRow, 'triggerDefRow');
+										var triggerDefNameCell = document.createElement('td');
+										setClassName(triggerDefNameCell, 'triggerDefNameCell');
+										var triggerDefEqualCell = document.createElement('td');
+										setClassName(triggerDefEqualCell, 'triggerDefEqualCell');
+										var triggerDefValueCell = document.createElement('td');
+										setClassName(triggerDefValueCell, 'triggerDefValueCell');
+										
+										triggerDefNameCell.innerHTML = triggerDefName;
+										triggerDefEqualCell.innerHTML = '=';
+										triggerDefValueCell.innerHTML = ((triggerDefaults[triggerDefName] !== null) ? "'" + triggerDefaults[triggerDefName] + "'": 'null');
+										
+										triggerDefRow.appendChild(triggerDefNameCell);
+										triggerDefRow.appendChild(triggerDefEqualCell);
+										triggerDefRow.appendChild(triggerDefValueCell);
+										triggerDefTableBody.appendChild(triggerDefRow);
+									}
+								}
+								if(triggerDefTableBody.childNodes.length > 0)
+								{
+									triggerDefaultsCell.appendChild(triggerDefTable);
+								}
+								else
+								{
+									triggerDefaultsCell.innerHTML = 'none';
+								}
+								
+								triggerRow.appendChild(triggerNameCell);
+								triggerRow.appendChild(triggerUrlCell);
+								triggerRow.appendChild(triggerDefaultsCell);
+								triggersTableBody.appendChild(triggerRow);
+							}
+						}
+					}
+					
+					//NOTES
+					var notesTableBody = document.getElementById('apiNotesBody');
+					if(specObj.notes && notesTableBody)
+					{
+						for(var i=0; i<specObj.notes.length; i++)
+						{
+							if(specObj.notes[i])
+							{
+								var noteRow = document.createElement('tr');
+								var noteCell = document.createElement('td');
+								noteRow.appendChild(noteCell);
+								noteCell.innerHTML = specObj.notes[i];
+								notesTableBody.appendChild(noteRow);
+							}
+						}
+					}
+					
+					//LINKS
+					var linksTableBody = document.getElementById('apiLinksBody');
+					if(specObj.links && linksTableBody)
+					{
+						for(var linkName in specObj.links)
+						{
+							if(specObj.links[linkName])
+							{
+								var linkRow = document.createElement('tr');
+								var linkCell = document.createElement('td');
+								var linkAnchor = document.createElement('a');
+								
+								linkAnchor.innerHTML = linkName;
+								linkAnchor.setAttribute('href', specObj.links[linkName]);
+								
+								linkCell.appendChild(linkAnchor);
+								linkRow.appendChild(linkCell);
+								linksTableBody.appendChild(linkRow);
+							}
+						}
+					}
+				}
+				document.getElementById('documentationContent').style.display = '';
+			} catch (err)
+			{
+				document.getElementById('loadingContent').innerHTML = ('Error occurred when creating documentation table: ' + err);
+			}
+			document.getElementById('loadingContent').style.display = 'none';
+		}
+		com.apikit.serviceApi.getSpecification(callbackFunc);
+		document.getElementById('loadingContent').style.display = '';
+	}
+}
+
+window.onload = function() { getDocs() };
+</script>
+</head>
+<body>
+	<h2>Documentation</h2>
+	<p>The API documentation below is loaded from the getSpecification function as JSON data and prettified for easier reading.</p>
+	<div id="loadingContent" style="display:none;">Loading API Specification...</div>
+	<div id="documentationContent" style="display:none;">
+		<table>
+			<thead>
+				<tr>
+					<th>Function Calls</th>
+					<th>Details</th>
+				</tr>
+				<tr class="topFuncRow">
+					<td class="topFuncNameCell">Name</td>
+					<td class="topFuncDetailCell">
+						<table class="subFuncTable">
+							<tbody>
+								<tr class="subFuncRow">
+									<td class="subFuncNameCell">Internal Call(s)</td>
+									<td class="subFuncGrantCell">Grant</td>
+									<td class="subFuncArgsCell">
+										<table class="subFuncArgsTable">
+											<tbody>
+												<tr class="subFuncArgRow">
+													<td colspan="2">Parameters</td>
+												</tr>
+												<tr class="subFuncArgRow">
+													<td class="subFuncArgNameCell">Name</td>
+													<td class="subFuncArgValidatorCell">Validator</td>
+												</tr>
+											</tbody>
+										</table>
+									</td>
+									<td class="subFuncTrigCell">Triggers</td>
+									<td class="subFuncDescCell">Description</td>
+								</tr>
+							</tbody>
+						</table>
+					</td>
+				</tr>
+			</thead>
+			<tbody id="funcDocsBody">
+			</tbody>
+		</table>
+		<table>
+			<thead>
+				<th>Trigger Name</th>
+				<th>Host API Url</th>
+				<th>Default Parameters</th>
+			</thead>
+			<tbody id="apiTriggersBody">
+			</tbody>
+		</table>
+		<table>
+			<thead>
+				<th>Validator</th>
+				<th>Regular Expression</th>
+			</thead>
+			<tbody id="apiValidatorsBody">
+			</tbody>
+		</table>
+		<table>
+			<thead>
+				<th>Notes</th>
+			</thead>
+			<tbody id="apiNotesBody">
+			</tbody>
+		</table>
+		<table>
+			<thead>
+				<th>Links</th>
+			</thead>
+			<tbody id="apiLinksBody">
+			</tbody>
+		</table>
+	</div>
+	<br />
+	<div>Get the API specification data in it's raw format (usable for dynamic interfaces, versioning or status verification) by calling function getSpecification: <a id="getSpecLink" href="#apiurl#?func=getSpecification">#apiurl#?func=getSpecification</a>.
+</body>
+</html>
